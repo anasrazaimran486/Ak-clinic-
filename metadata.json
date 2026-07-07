@@ -1,0 +1,6 @@
+{
+  "name": "A K Clinic",
+  "description": "A K Clinic Karachi provides general OPD consultation, free blood pressure checks, weight assessment, pulse monitoring, respiratory healthcare, child health awareness, and preventive medical services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
