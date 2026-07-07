@@ -95,7 +95,7 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" id="appointment-modal-overlay">
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-start justify-center md:items-center" id="appointment-modal-overlay">
           {/* Backdrop with elegant blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -111,7 +111,7 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.5 }}
-            className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl my-4 md:my-8"
           >
             {/* Elegant Header Accent */}
             <div className="h-2 bg-gradient-to-r from-[#E74C4C] via-[#EF4444] to-[#F87171]" />
