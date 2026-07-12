@@ -104,8 +104,8 @@ export default function Header({ activeTab, setActiveTab, onBookClick }: HeaderP
 
       {/* Mobile Drawer Panel */}
       {isOpen && (
-        <div className="lg:hidden border-t border-gray-100 bg-white" id="mobile-nav-panel">
-          <div className="px-4 pt-3 pb-6 space-y-2">
+        <div className="lg:hidden border-t border-gray-100 bg-white max-h-[calc(100vh-140px)] overflow-y-auto overscroll-contain shadow-inner" id="mobile-nav-panel">
+          <div className="px-4 pt-3 pb-28 space-y-2">
             {navigationItems.map((item) => (
               <button
                 key={item.id}

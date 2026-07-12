@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Rules for appointments
+    match /appointments/{document} {
+      allow read, write: if true;
+    }
+    
+    // Rules for doctors
+    match /doctors/{document} {
+      allow read, write: if true;
+    }
+    
+    // Rules for tokens
+    match /tokens/{document} {
+      allow read, write: if true;
+    }
+    
+    // Rules for invoices
+    match /invoices/{document} {
+      allow read, write: if true;
+    }
+  }
+}

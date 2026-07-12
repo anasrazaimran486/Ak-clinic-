@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Calendar, Clock, CheckCircle, Phone, ArrowRight, Stethoscope } from 'lucide-react';
 import { SERVICES } from '../data';
 import { AppointmentRequest } from '../types';
+import { db, doc, setDoc } from '../lib/firebase';
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -14,7 +15,6 @@ interface AppointmentModalProps {
 export default function AppointmentModal({ isOpen, onClose, preSelectedService = '', onSuccess }: AppointmentModalProps) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [service, setService] = useState(preSelectedService || SERVICES[0].title);
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('05:30 PM - 06:00 PM');
@@ -50,12 +50,12 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
     setIsSubmitting(true);
 
     // Simulate clinical dispatch delay for realistic trust building
-    setTimeout(() => {
+    setTimeout(async () => {
       const newRequest: AppointmentRequest = {
         id: 'APT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         fullName,
         phone,
-        email: email || 'No email provided',
+        email: 'No email provided',
         service,
         date: date || new Date().toISOString().split('T')[0],
         timeSlot,
@@ -63,6 +63,13 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
         status: 'Pending',
         createdAt: new Date().toISOString()
       };
+
+      try {
+        // Save to Firebase Firestore
+        await setDoc(doc(db, 'appointments', newRequest.id), newRequest);
+      } catch (err) {
+        console.error("Error saving appointment to Firebase Firestore:", err);
+      }
 
       // Save to localStorage
       const existing = localStorage.getItem('ak_clinic_appointments');
@@ -83,7 +90,6 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
   const handleReset = () => {
     setFullName('');
     setPhone('');
-    setEmail('');
     setService(SERVICES[0].title);
     setDate('');
     setTimeSlot('05:30 PM - 06:00 PM');
@@ -95,7 +101,7 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-start justify-center md:items-center" id="appointment-modal-overlay">
+        <div className="fixed inset-0 z-50 overflow-y-auto" id="appointment-modal-overlay">
           {/* Backdrop with elegant blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -105,16 +111,18 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
             className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
           />
 
-          {/* Modal Container */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ type: 'spring', duration: 0.5 }}
-            className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl my-4 md:my-8"
-          >
-            {/* Elegant Header Accent */}
-            <div className="h-2 bg-gradient-to-r from-[#E74C4C] via-[#EF4444] to-[#F87171]" />
+          {/* Modal Centering Wrapper */}
+          <div className="flex min-h-full items-start justify-center p-4 md:items-center">
+            {/* Modal Container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', duration: 0.5 }}
+              className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl my-4 md:my-8"
+            >
+              {/* Elegant Header Accent */}
+              <div className="h-2 bg-gradient-to-r from-[#E74C4C] via-[#EF4444] to-[#F87171]" />
 
             <button
               onClick={handleReset}
@@ -157,35 +165,20 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
                     />
                   </div>
 
-                  {/* Phone & Email Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                        Phone Number <span className="text-[#E74C4C]">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="e.g. 03278259230"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-2 focus:ring-[#E74C4C]/20 focus:outline-none transition-all"
-                        id="input-phone"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="e.g. email@example.com"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-2 focus:ring-[#E74C4C]/20 focus:outline-none transition-all"
-                        id="input-email"
-                      />
-                    </div>
+                  {/* Phone Number */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                      Phone Number <span className="text-[#E74C4C]">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 03278259230"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-2 focus:ring-[#E74C4C]/20 focus:outline-none transition-all"
+                      id="input-phone"
+                    />
                   </div>
 
                   {/* Service Needed */}
@@ -346,7 +339,8 @@ export default function AppointmentModal({ isOpen, onClose, preSelectedService =
                 </div>
               </motion.div>
             )}
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       )}
     </AnimatePresence>

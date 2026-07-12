@@ -45,3 +45,46 @@ export interface GalleryItem {
   imageUrl: string;
   altText: string;
 }
+
+export interface Doctor {
+  id: string;
+  name: string;
+  specialization: string;
+  fee: number;
+  isActive: boolean;
+}
+
+export interface Token {
+  id: string;
+  tokenNumber: string; // e.g., "001", "002"
+  fullName: string;
+  dob: string;
+  age: number;
+  gender: 'Male' | 'Female' | 'Other';
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialization: string;
+  doctorFee: number;
+  status: 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  createdAt: string;
+  date: string; // YYYY-MM-DD
+  treatment?: string;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceId: string; // INV-2026-0001
+  tokenNumber: string;
+  patientName: string;
+  age: number;
+  gender: string;
+  doctorName: string;
+  doctorFee: number;
+  totalAmount: number;
+  paymentStatus: 'Paid' | 'Pending' | 'Partial';
+  paymentMethod: 'Cash' | 'Online';
+  generatedAt: string;
+  dob?: string;
+  treatment?: string;
+}
+

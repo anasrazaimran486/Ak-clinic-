@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Stethoscope, MessageSquare } from 'lucide-react';
 import { CLINIC_INFO, SERVICES } from '../data';
 import { AppointmentRequest } from '../types';
+import { db, doc, setDoc } from '../lib/firebase';
 
 interface ContactProps {
   onSuccess?: () => void;
@@ -11,7 +12,6 @@ interface ContactProps {
 export default function Contact({ onSuccess }: ContactProps) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [service, setService] = useState(SERVICES[0].title);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,13 +27,13 @@ export default function Contact({ onSuccess }: ContactProps) {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const newId = 'APT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       const newRequest: AppointmentRequest = {
         id: newId,
         fullName,
         phone,
-        email: email || 'No email provided',
+        email: 'No email provided',
         service,
         date: new Date().toISOString().split('T')[0],
         timeSlot: "05:30 PM - 06:00 PM (Default)",
@@ -41,6 +41,13 @@ export default function Contact({ onSuccess }: ContactProps) {
         status: 'Pending',
         createdAt: new Date().toISOString()
       };
+
+      try {
+        // Save to Firebase Firestore
+        await setDoc(doc(db, 'appointments', newRequest.id), newRequest);
+      } catch (err) {
+        console.error("Error saving contact request to Firebase Firestore:", err);
+      }
 
       // Save to localStorage
       const existing = localStorage.getItem('ak_clinic_appointments');
@@ -59,7 +66,6 @@ export default function Contact({ onSuccess }: ContactProps) {
       // Reset form states
       setFullName('');
       setPhone('');
-      setEmail('');
       setService(SERVICES[0].title);
       setMessage('');
     }, 1200);
@@ -183,33 +189,19 @@ export default function Contact({ onSuccess }: ContactProps) {
                   />
                 </div>
 
-                {/* Phone & Email Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      Phone Number <span className="text-[#E74C4C]">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g. 03278259230"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-1 focus:ring-[#E74C4C] focus:outline-none bg-white transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      Email Address (Optional)
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. bilal@domain.com"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-1 focus:ring-[#E74C4C] focus:outline-none bg-white transition-all"
-                    />
-                  </div>
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    Phone Number <span className="text-[#E74C4C]">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="e.g. 03278259230"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#E74C4C] focus:ring-1 focus:ring-[#E74C4C] focus:outline-none bg-white transition-all"
+                  />
                 </div>
 
                 {/* Service Needed */}
